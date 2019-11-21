@@ -58,79 +58,85 @@ class application:
             ,command=self.make_blur).pack(side=RIGHT)
         Button(f,text='Undo', bd=2,fg='white',bg='black',font=('',15)
             ,command=self.undo).pack(side=RIGHT)
+        Button(f,text='Redo', bd=2,fg='white',bg='black',font=('',15)
+            ,command=self.redo).pack(side=RIGHT)
 
         f.pack()
  
  
+    # Kép betöltése
     def make_image(self):
         try:
             File = fd.askopenfilename(filetypes=[('jpg files', '*.jpg')])
-            self.pilImage = Image.open(File)
-            w, h = self.pilImage.size
-            self.width = w
-            self.height = h
-            while self.height > 1700 or self.width > 920 or self.width > 1700 or self.height > 920:
-                self.width = int(self.width//1.2)
-                self.height = int(self.height//1.2)
-            re=self.pilImage.resize((self.width, self.height),Image.NEAREST)
-            self.img = ImageTk.PhotoImage(re)
-            self.canvas.delete(ALL)
-            self.canvas.config(width=self.width, height=self.height)
-            self.canvas.create_image(0, 0,
-                anchor=NW,image=self.img)
-            self.history.AddImageToHistory(self.img)
+            self.pilImage = Image.open(File)    # eredeti nagy kép betöltése
+            self.resizedImage_to_canvas()       # eredeti -> resizedImage -> img -> canvas
+            self.history.AddImageToHistory(self.pilImage)   # eredeti kép -> history
         except:
             ms.showerror('Error!','File type is unsupported.')
 
 
+    # Elforgatás
     def rotate_image(self):
         try:
-            self.pilImage = self.pilImage.transpose(Image.ROTATE_90)
-            w, h = self.pilImage.size
-            print(w, h)
-            self.width = w
-            self.height = h
-            while self.height > 1700 or self.width > 920 or self.width > 1700 or self.height > 920:
-                self.width = int(self.width//1.2)
-                self.height = int(self.height//1.2)
-            print(self.width, self.height)
-            re=self.pilImage.resize((self.width, self.height),Image.NEAREST)
-            self.img = ImageTk.PhotoImage(re)
-            self.canvas.delete(ALL)
-            self.canvas.config(width=self.width, height=self.height)
-            self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-            self.history.AddImageToHistory(self.img)
+            self.pilImage = self.pilImage.transpose(Image.ROTATE_90) # eredeti kép elforgatása
+            self.resizedImage_to_canvas()
+            self.history.AddImageToHistory(self.pilImage)
         except:
             ms.showerror('No photo', 'Select something')
 
+
+    # Fekete-fehér
     def make_blacknwhite(self):
         try:    
-            
-            re=self.pilImage.resize((self.width, self.height),Image.NEAREST).convert('L')
-            self.img = ImageTk.PhotoImage(re)
-            self.canvas.delete(ALL)
-            self.canvas.config(width=self.width, height=self.height)
-            self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-            self.history.AddImageToHistory(self.img)
+            self.pilImage = self.pilImage.convert('L') # eredeti kép -> fekete-fehér
+            self.resizedImage_to_canvas()
+            self.history.AddImageToHistory(self.pilImage)
         except:
             ms.showerror('No photo', 'Select something')
 
+
+    # Homályosítás
     def make_blur(self):
         try:
-            re=self.pilImage.resize((self.width, self.height),Image.NEAREST).filter(ImageFilter.GaussianBlur(radius = self.blurvalue.get()))
-            self.img = ImageTk.PhotoImage(re)
-            self.canvas.delete(ALL)
-            self.canvas.config(width=self.width, height=self.height)
-            self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-            self.history.AddImageToHistory(self.img)
+            self.pilImage = self.pilImage.filter(ImageFilter.GaussianBlur(radius = self.blurvalue.get())) # eredeti kép -> homályos
+            self.resizedImage_to_canvas()
+            self.history.AddImageToHistory(self.pilImage)
         except:
             ms.showerror('No photo', 'Select something')
 
-    def undo(self):
-        self.img = self.history.Undo()
+
+    # resizedImage -> canvas
+    def resizedImage_to_canvas(self):
+        self.resize_pilImage()  # eredeti(nagy) kép -> resizedImage
+        self.img = ImageTk.PhotoImage(self.resizedImage)
         self.canvas.delete(ALL)
         self.canvas.config(width=self.width, height=self.height)
-        self.canvas.create_image(0, 0, anchor=NW, image=self.img)       
+        self.canvas.create_image(0, 0, anchor=NW, image=self.img)
+
+
+    # pilImage átméretezése -> resizedImage
+    def resize_pilImage(self):
+        w, h = self.pilImage.size
+        print(w, h)
+        self.width = w
+        self.height = h
+        while self.height > 1700 or self.width > 920 or self.width > 1700 or self.height > 920:
+            self.width = int(self.width//1.2)
+            self.height = int(self.height//1.2)
+        print(self.width, self.height)
+        self.resizedImage = self.pilImage.resize((self.width, self.height),Image.NEAREST)
+
+
+    # Visszavonás
+    def undo(self):
+        self.pilImage = self.history.Undo() # előző kép betöltése
+        self.resizedImage_to_canvas()  # betöltött kép -> kicsinyített kép -> canvas    
+
+
+    # Újra
+    def redo(self):
+        self.pilImage = self.history.Redo() # következő kép betöltése
+        self.resizedImage_to_canvas()  # betöltött kép -> kicsinyített kép -> canvas    
 
 root=Tk()
 root.configure(bg='white')
