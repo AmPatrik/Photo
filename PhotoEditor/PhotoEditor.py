@@ -3,6 +3,7 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as ms
 import PIL 
 from PIL import Image, ImageTk, ImageFilter
+from ImageHistory import ImageHistory
  
 
 class FullScreenApp(object):
@@ -26,6 +27,7 @@ class application:
         self.height = 500
         self.scale = Scale()
         self.blurvalue = IntVar()
+        self.history = ImageHistory(10)
         self.setup_gui(self.width, self.height, self.scale)
         self.img=None
         
@@ -44,6 +46,7 @@ class application:
         self.wt = self.canvas.create_text(self.width/2-40, self.height/2 ,text=txt
             ,font=('',30),fill='white')
         f=Frame(self.master,bg='white',padx=10,pady=10)
+
         Button(f,text='Open New Image',bd=2,fg='white',bg='black',font=('',15)
             ,command=self.make_image).pack(side=LEFT)
         Button(f,text='Rotate',bd=2,fg='white',bg='black',font=('',15)
@@ -51,9 +54,11 @@ class application:
         Button(f,text='Black and white',bd=2,fg='white',bg='black',font=('',15)
             ,command=self.make_blacknwhite).pack(side=RIGHT)
         self.scale = Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=1, from_=0, to_=5, variable = self.blurvalue).pack(side = RIGHT)
-        
         Button(f,text='Blur',bd=2,fg='white',bg='black',font=('',15)
             ,command=self.make_blur).pack(side=RIGHT)
+        Button(f,text='Undo', bd=2,fg='white',bg='black',font=('',15)
+            ,command=self.undo).pack(side=RIGHT)
+
         f.pack()
  
  
@@ -73,6 +78,7 @@ class application:
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0,
                 anchor=NW,image=self.img)
+            self.history.AddImageToHistory(self.pilImage)
         except:
             ms.showerror('Error!','File type is unsupported.')
 
@@ -93,22 +99,24 @@ class application:
             self.canvas.delete(ALL)
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0, anchor=NW, image=self.img)
+            self.history.AddImageToHistory(self.pilImage)
         except:
             ms.showerror('No photo', 'Select something')
 
     def make_blacknwhite(self):
-        try:
+        try:    
             self.pilImage = self.pilImage.convert('L')
             re=self.pilImage.resize((self.width, self.height),Image.NEAREST)
             self.img = ImageTk.PhotoImage(re)
             self.canvas.delete(ALL)
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0, anchor=NW, image=self.img)
+            self.history.AddImageToHistory(self.pilImage)
         except:
             ms.showerror('No photo', 'Select something')
 
     def make_blur(self):
-        try:
+        #try:
             print(self.blurvalue.get())
             self.pilImage = self.pilImage.filter(ImageFilter.GaussianBlur(radius = self.blurvalue.get()))
             re=self.pilImage.resize((self.width, self.height),Image.NEAREST)
@@ -116,8 +124,16 @@ class application:
             self.canvas.delete(ALL)
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-        except:
-            ms.showerror('No photo', 'Select something')
+            self.history.AddImageToHistory(self.pilImage)
+        #except:
+            #ms.showerror('No photo', 'Select something')
+
+    def undo(self):
+        self.pilImage = self.history.Undo()
+        self.img = ImageTk.PhotoImage(self.pilImage)
+        self.canvas.delete(ALL)
+        self.canvas.config(width=self.width, height=self.height)
+        self.canvas.create_image(0, 0, anchor=NW, image=self.img)       
 
 root=Tk()
 root.configure(bg='white')
