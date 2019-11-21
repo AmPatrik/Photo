@@ -2,14 +2,14 @@ class ImageHistory:
     
     def __init__(self, maxSteps):
         self.maxNumberOfSteps = maxSteps
-        self.historyIndex = 0
+        self.historyIndex = -1
         self.images = []
 
     # Kép hozzáadása a listához
     def AddImageToHistory(self, image):
-        if len(self.images) - 1 > self.historyIndex + 1:
+        if len(self.images) - 1 > self.historyIndex:
             for i in range(self.historyIndex + 1, len(self.images) - 1):
-                self.images.pop(i)        
+                self.images.pop(self.historyIndex + 1)        
 
         self.images.append(image)
         self.historyIndex += 1

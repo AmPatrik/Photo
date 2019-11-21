@@ -78,7 +78,7 @@ class application:
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0,
                 anchor=NW,image=self.img)
-            self.history.AddImageToHistory(self.pilImage)
+            self.history.AddImageToHistory(self.img)
         except:
             ms.showerror('Error!','File type is unsupported.')
 
@@ -99,38 +99,35 @@ class application:
             self.canvas.delete(ALL)
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-            self.history.AddImageToHistory(self.pilImage)
+            self.history.AddImageToHistory(self.img)
         except:
             ms.showerror('No photo', 'Select something')
 
     def make_blacknwhite(self):
         try:    
-            self.pilImage = self.pilImage.convert('L')
-            re=self.pilImage.resize((self.width, self.height),Image.NEAREST)
+            
+            re=self.pilImage.resize((self.width, self.height),Image.NEAREST).convert('L')
             self.img = ImageTk.PhotoImage(re)
             self.canvas.delete(ALL)
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-            self.history.AddImageToHistory(self.pilImage)
+            self.history.AddImageToHistory(self.img)
         except:
             ms.showerror('No photo', 'Select something')
 
     def make_blur(self):
-        #try:
-            print(self.blurvalue.get())
-            self.pilImage = self.pilImage.filter(ImageFilter.GaussianBlur(radius = self.blurvalue.get()))
-            re=self.pilImage.resize((self.width, self.height),Image.NEAREST)
+        try:
+            re=self.pilImage.resize((self.width, self.height),Image.NEAREST).filter(ImageFilter.GaussianBlur(radius = self.blurvalue.get()))
             self.img = ImageTk.PhotoImage(re)
             self.canvas.delete(ALL)
             self.canvas.config(width=self.width, height=self.height)
             self.canvas.create_image(0, 0, anchor=NW, image=self.img)
-            self.history.AddImageToHistory(self.pilImage)
-        #except:
-            #ms.showerror('No photo', 'Select something')
+            self.history.AddImageToHistory(self.img)
+        except:
+            ms.showerror('No photo', 'Select something')
 
     def undo(self):
-        self.pilImage = self.history.Undo()
-        self.img = ImageTk.PhotoImage(self.pilImage)
+        self.img = self.history.Undo()
         self.canvas.delete(ALL)
         self.canvas.config(width=self.width, height=self.height)
         self.canvas.create_image(0, 0, anchor=NW, image=self.img)       
