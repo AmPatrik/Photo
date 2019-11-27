@@ -10,7 +10,7 @@ class ImageHistory:
     def AddImageToHistory(self, image):
         # az aktuális kép után kiveszünk mindent a listából
         if len(self.images) - 1 > self.historyIndex:
-            for i in range(self.historyIndex + 1, len(self.images) - 1):
+            for i in range(self.historyIndex + 1, len(self.images)):
                 self.images.pop(self.historyIndex + 1)        
 
         # kép hozzáfűzése a listához
@@ -27,6 +27,9 @@ class ImageHistory:
     def Undo(self):
         if self.historyIndex > 0:   # ha elérte a 0 indexet
             self.historyIndex -= 1
+
+        print("historyIndex: ")
+        print(self.historyIndex)
         return self.images[self.historyIndex]
 
 
@@ -35,4 +38,7 @@ class ImageHistory:
         self.historyIndex += 1
         if self.historyIndex == len(self.images):   # ha elérte a lista hosszát
             self.historyIndex -= 1
+        
+        print("historyIndex: ")
+        print(self.historyIndex)   
         return self.images[self.historyIndex]

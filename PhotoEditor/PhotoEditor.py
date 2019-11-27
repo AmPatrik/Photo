@@ -13,12 +13,14 @@ class FullScreenApp(object):
         self._geom='200x200+0+0'
         master.geometry("{0}x{1}+0+0".format(
             master.winfo_screenwidth(), master.winfo_screenheight()-100))
-        master.bind('<Escape>',self.toggle_geom)            
+        master.bind('<Escape>',self.toggle_geom)
+        
     def toggle_geom(self,event):
         geom=self.master.winfo_geometry()
         print(geom,self._geom)
         self.master.geometry(self._geom)
         self._geom=geom
+
 
 class application:
     def __init__(self,master):
@@ -27,28 +29,31 @@ class application:
         self.height = master.winfo_screenheight() - 180
         self.maxwidth = self.width
         self.maxheight = self.height
+        self.appHeight = master.winfo_screenheight() - 100
         self.blurvalue = IntVar()
         self.brightnessvalue = DoubleVar()
         self.sharpnessvalue = DoubleVar()
         self.contrastvalue = DoubleVar()
         self.history = ImageHistory(10)
         self.extension = StringVar()
-        self.setup_gui(self.width, self.height)
+        self.setup_gui(self.width, self.height, self.appHeight)
         self.img=None
         
         
  
-    def setup_gui(self,w, h):
+    def setup_gui(self,w, h, appH):
         Label(self.master,text = 'Photo Editor',pady=5,bg='grey',
             font=('Courier new',30)).pack(fill=X)
         
         txt = "No image"
-        
-        f=Frame(self.master,bg='grey',padx=10,pady=10, bd = 5) #file megnyitás ás effektek frame-je
-        f2=Frame(self.master,bg='grey',padx=10,pady=10, bd = 5) #undo-redo frame-je
-        f3=Frame(self.master, bg='black', padx=10, pady=10, bd=3) #kép frame-je
-        
-        
+
+        # Betűméret beállítása a képernyő méretéhez igazítva
+        font_size = IntVar()
+        font_size = int(appH/65)
+
+        f = Frame(self.master,bg='grey',padx=10,pady=10, bd = 5) #file megnyitás ás effektek frame-je
+        f2 = Frame(self.master,bg='grey',padx=10,pady=10, bd = 5) #undo-redo frame-je
+        f3 = Frame(self.master, bg='black', padx=10, pady=10, bd=3) #kép frame-je
         
         self.canvas = Canvas(f3,height=h ,width=w,
             bg='black',relief='ridge')
@@ -56,29 +61,30 @@ class application:
             ,font=('',30),fill='white')
         self.canvas.pack()
         
-        #file megnyitás
-        Button(f,text='Open New Image',bd=2,fg='black',bg='gray80',font=('',15) ,command=self.make_image, pady=30).pack(side=TOP, fill=X)
-        #effketek
-        Button(f,text='Rotate',bd=2,fg='white',bg='black',font=('',15)
+        #file megnyitás gombja
+        Button(f,text='Open New Image',bd=2,fg='black',bg='gray80',font=('',font_size) ,command=self.make_image, pady=font_size * 1.5).pack(side=TOP, fill=X)
+        
+        #effketek gombjai
+        Button(f,text='Rotate',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.rotate_image).pack(side=TOP, fill=X)
-        Button(f,text='Black and white',bd=2,fg='white',bg='black',font=('',15)
+        Button(f,text='Black and white',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.make_blacknwhite).pack(side=TOP, fill=X)
-        Button(f,text='Blur',bd=2,fg='white',bg='black',font=('',15)
+        Button(f,text='Blur',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.make_blur).pack(side=TOP, fill=X)
         Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=1, from_=0, to_=5, variable = self.blurvalue, label='Blur value').pack(side = TOP, fill=X)
-        Button(f,text='Flip',bd=2,fg='white',bg='black',font=('',15)
+        Button(f,text='Flip',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.flip).pack(side=TOP, fill=X)
-        Button(f,text='Change brightness',bd=2,fg='white',bg='black',font=('',15)
+        Button(f,text='Change brightness',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.brightness).pack(side=TOP, fill=X)
         scale1 = Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=0.1, from_=0, to_=5, variable = self.brightnessvalue, label='Brightness value')
         scale1.set(1)
         scale1.pack(side=TOP, fill=X)
-        Button(f,text='Change sharpness',bd=2,fg='white',bg='black',font=('',15)
+        Button(f,text='Change sharpness',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.sharpness).pack(side=TOP, fill=X)
         scale2 = Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=0.1, from_=0, to_=10, variable = self.sharpnessvalue, label='Sharpness value')
         scale2.set(0)
         scale2.pack(side=TOP, fill=X)
-        Button(f,text='Change contrast',bd=2,fg='white',bg='black',font=('',15)
+        Button(f,text='Change contrast',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.contrast).pack(side=TOP, fill=X)
         scale3 = Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=0.1, from_=-10, to_=10, variable = self.contrastvalue, label='Contrast value')
         scale3.set(0)
@@ -87,9 +93,10 @@ class application:
         #mentés
         self.extension.set("jpg")
         OptionMenu(f, self.extension, "jpg", "png", "bmp").pack(side=BOTTOM, fill=X)
-        Label(f, text='Select extension', bg='snow3', font=("Ariel", 15)).pack(side=BOTTOM, fill=X)
-        Button(f,text='Save',bd=2,fg='white',bg='black',font=('',15)
+        Label(f, text='Select extension', bg='snow3', font=("Ariel", font_size)).pack(side=BOTTOM, fill=X)
+        Button(f,text='Save',bd=2,fg='white',bg='black',font=('',font_size)
             ,command=self.save).pack(side=BOTTOM, fill=X)
+
         #undo-redo gombok
         Button(f2,text='Undo', bd=2,fg='white',bg='black',font=('',15)
             ,command=self.undo).pack(side=TOP, fill=X)
