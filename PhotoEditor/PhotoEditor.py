@@ -10,16 +10,8 @@ class FullScreenApp(object):
     def __init__(self, master, **kwargs):
         self.master=master
         pad=40
-        self._geom='200x200+0+0'
         master.geometry("{0}x{1}+0+0".format(
             master.winfo_screenwidth(), master.winfo_screenheight()-100))
-        master.bind('<Escape>',self.toggle_geom)
-        
-    def toggle_geom(self,event):
-        geom=self.master.winfo_geometry()
-        print(geom,self._geom)
-        self.master.geometry(self._geom)
-        self._geom=geom
 
 
 class application:
@@ -37,7 +29,7 @@ class application:
         self.history = ImageHistory(10)
         self.extension = StringVar()
         self.setup_gui(self.width, self.height, self.appHeight)
-        self.img=None
+
         
         
  
@@ -218,13 +210,15 @@ class application:
 
     # Mentés
     def save(self):
+        filename = ""
         filename = fd.asksaveasfilename(title='Please select a directory') + "." + self.extension.get() #a file mentésének előkészítése, lekérdezi a kiterjesztést
+        print(filename)
         self.pilImage.save(filename)
 
 
 root=Tk()
 root.configure(bg='snow3')
-root.title('Photo editor')
+root.title('Photo editor v2.2')
 application(root)
 FullScreenApp(root)
 root.resizable(0,0)
