@@ -25,9 +25,12 @@ class application:
         self.master = master
         self.width = master.winfo_screenwidth() - 375
         self.height = master.winfo_screenheight() - 180
+        self.maxwidth = self.width
+        self.maxheight = self.height
         self.blurvalue = IntVar()
         self.brightnessvalue = DoubleVar()
         self.sharpnessvalue = DoubleVar()
+        self.contrastvalue = DoubleVar()
         self.history = ImageHistory(10)
         self.extension = StringVar()
         self.setup_gui(self.width, self.height)
@@ -44,13 +47,15 @@ class application:
         f=Frame(self.master,bg='grey',padx=10,pady=10, bd = 5) #file megnyitás ás effektek frame-je
         f2=Frame(self.master,bg='grey',padx=10,pady=10, bd = 5) #undo-redo frame-je
         f3=Frame(self.master, bg='black', padx=10, pady=10, bd=3) #kép frame-je
-        self.maxwidth=f3.width
-        self.maxheight=f3.height
+        
+        
+        
         self.canvas = Canvas(f3,height=h ,width=w,
             bg='black',relief='ridge')
         self.wt = self.canvas.create_text(self.width/2, self.height/2 ,text=txt
             ,font=('',30),fill='white')
         self.canvas.pack()
+        
         #file megnyitás
         Button(f,text='Open New Image',bd=2,fg='black',bg='gray80',font=('',15) ,command=self.make_image, pady=30).pack(side=TOP, fill=X)
         #effketek
@@ -73,7 +78,11 @@ class application:
         scale2 = Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=0.1, from_=0, to_=10, variable = self.sharpnessvalue, label='Sharpness value')
         scale2.set(0)
         scale2.pack(side=TOP, fill=X)
-
+        Button(f,text='Change contrast',bd=2,fg='white',bg='black',font=('',15)
+            ,command=self.contrast).pack(side=TOP, fill=X)
+        scale3 = Scale(f, sliderlength = 5, orient = HORIZONTAL, resolution=0.1, from_=-10, to_=10, variable = self.contrastvalue, label='Contrast value')
+        scale3.set(0)
+        scale3.pack(side=TOP, fill=X)
 
         #mentés
         self.extension.set("jpg")
@@ -96,7 +105,7 @@ class application:
     # Kép betöltése
     def make_image(self):
         try:
-            File = fd.askopenfilename(filetypes=[('jpg files', '*.jpg')])
+            File = fd.askopenfilename(filetypes=[('Pictures', "*.png | *.PNG | *.jpg | *.JPG | *.bmp | *.BMP"), ('All files', '*')])
             self.pilImage = Image.open(File)    # eredeti nagy kép betöltése
             self.resizedImage_to_canvas()       # eredeti -> resizedImage -> img -> canvas
             self.history.AddImageToHistory(self.pilImage)   # eredeti kép -> history
@@ -160,6 +169,14 @@ class application:
         except:
             ms.showerror('No photo', 'Select something')
 
+    # Kontraszt állítása
+    def contrast(self):
+        try:
+            self.pilImage = ImageEnhance.Contrast(self.pilImage).enhance(self.contrastvalue.get()) # eredeti kép -> módosított kép
+            self.resizedImage_to_canvas()
+            self.history.AddImageToHistory(self.pilImage)
+        except:
+            ms.showerror('No photo', 'Select something')
 
     # resizedImage -> canvas
     def resizedImage_to_canvas(self):
@@ -201,7 +218,7 @@ class application:
 root=Tk()
 root.configure(bg='snow3')
 root.title('Photo editor')
-app = application(root)
+application(root)
 FullScreenApp(root)
 root.resizable(0,0)
 root.mainloop()
