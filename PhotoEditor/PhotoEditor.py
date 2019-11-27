@@ -86,7 +86,7 @@ class application:
 
         #mentés
         self.extension.set("jpg")
-        OptionMenu(f, self.extension, "jpg", "png").pack(side=BOTTOM, fill=X)
+        OptionMenu(f, self.extension, "jpg", "png", "bmp").pack(side=BOTTOM, fill=X)
         Label(f, text='Select extension', bg='snow3', font=("Ariel", 15)).pack(side=BOTTOM, fill=X)
         Button(f,text='Save',bd=2,fg='white',bg='black',font=('',15)
             ,command=self.save).pack(side=BOTTOM, fill=X)
